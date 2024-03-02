@@ -24,33 +24,29 @@ class Programa:
         yield self.env.timeout(1)  # Simular el tiempo de operaciones de I/O
 
     def run(self):
-        # logica de como cambiar de estados
-        # Pedir memoria
-        # with request etc
-            # pedir cpu
-        yield self.env.timeout(10)
-               # ejecutar 3 instrucciones
-               # ponga un timeout
-            # pedir io/o no
-               # esperar
-            # fin
-            
-def simular(env, param):
-    #cambiar
+        print(f"Tiempo {self.env.now}: Iniciando ejecución")
+        yield self.env.process(self.pedir_memoria())
+        yield self.env.process(self.usar_cpu())
+        self.num_instruc -= 3  # Se ejecutan 3 instrucciones en cada ciclo
+        while self.num_instruc > 0:
+            yield self.env.timeout(1)  # Simular el tiempo de ejecución de instrucciones
+            self.num_instruc -= 3  # Se ejecutan 3 instrucciones en cada ciclo
+            if random.randint(1, 21) == 1:
+                yield self.env.process(self.pedir_io())
+        print(f"Tiempo {self.env.now}: Proceso terminado, liberando memoria")
+        yield self.ram.put(self.memoria)
+
+def simular(env, ram, num_procesos):
     print("Simulando....")
-        
-# Cambiar a procesos
-        
+    for i in range(num_procesos):  # Simular la cantidad de programas especificada por el usuario
+        programa = Programa(env, ram, None, env.now)  # El procesador no se usa en esta versión
+        env.process(programa.run())
+        yield env.timeout(1)  # Simular intervalos de llegada de programas
 
 env = simpy.Environment()
-track = simpy.Resource(env, capacity=1)  # Define the race track as a shared resource
-print("Llamada a simular")
-env.process(simular(env, track))
+ram = simpy.Container(env, init=100, capacity=100)  # Inicializar la memoria RAM con capacidad 100
+
+num_procesos = int(input("Ingrese la cantidad de procesos a simular: "))
+env.process(simular(env, ram, num_procesos))
 
 env.run()
-
-# TODO
-# - construir cpu
-# - construir ram
-# - crear programas/procesos
-# - solicitar memoria
