@@ -4,7 +4,6 @@ import csv
 import statistics
 
 class Programa:
-
     def __init__(self, env, ram, procesador, tiempo_inicio, numero_proceso):
         self.memoria = random.randint(1, 10)
         self.num_instruc = random.randint(1, 10)
@@ -44,7 +43,7 @@ class Programa:
         yield self.ram.put(self.memoria)
         return self.tiempo_inicio, self.env.now
 
-def simular(env, ram, num_procesos):
+def simular(env, ram, num_procesos, intervalo):
     tiempos_ejecucion = []
     print("Simulando....")
     for i in range(num_procesos):
@@ -52,7 +51,7 @@ def simular(env, ram, num_procesos):
         programa = Programa(env, ram, None, env.now, numero_proceso)
         tiempo_inicio, tiempo_final = yield env.process(programa.run())
         tiempos_ejecucion.append((tiempo_inicio, tiempo_final))
-        yield env.timeout(1)
+        yield env.timeout(intervalo)
     
     tiempo_promedio = statistics.mean(tiempo_final - tiempo_inicio for tiempo_inicio, tiempo_final in tiempos_ejecucion)
     desviacion_estandar = statistics.stdev(tiempo_final - tiempo_inicio for tiempo_inicio, tiempo_final in tiempos_ejecucion)
@@ -76,6 +75,8 @@ env = simpy.Environment()
 ram = simpy.Container(env, init=100, capacity=100)
 
 num_procesos = int(input("Ingrese la cantidad de procesos a simular: "))
-env.process(simular(env, ram, num_procesos))
+intervalo = int(input("Ingrese el intervalo entre procesos (en segundos): "))
+
+env.process(simular(env, ram, num_procesos, intervalo))
 
 env.run()
