@@ -36,8 +36,6 @@ El código está organizado en las siguientes secciones:
 
 ## Contribuyentes
 
-- Desarrollado por [Tu Nombre]
+- Diego Fernando Patzán Marroquín (23525)
 
-## Licencia
 
-Diego Fernando Patzán Marroquín (23525)
