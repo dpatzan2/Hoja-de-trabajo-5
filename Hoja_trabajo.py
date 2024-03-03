@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 class Programa:
     def __init__(self, env, ram, procesadores, tiempo_inicio, numero_proceso):
         self.memoria = 100
-        self.num_instruc = random.randint(1, 10)
+        self.num_instruc = 6  # Default number of instructions
         self.env = env
         self.ram = ram
-        self.procesadores = procesadores  
+        self.procesadores = procesadores if procesadores else 1  # Default to 1 processor
         self.tiempo_inicio = tiempo_inicio
         self.tiempo_ejecucion = 0
         self.numero_proceso = numero_proceso
@@ -20,23 +20,23 @@ class Programa:
         yield self.ram.get(self.memoria)
 
     def usar_cpu(self):
-        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Usando CPU , Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
-        yield self.env.timeout(1)
+        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Usando CPU, Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
+        yield self.env.timeout(1 / self.procesadores)  # Adjusting for multiple processors
         self.tiempo_ejecucion += 1
 
     def pedir_io(self):
-        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Realizando operaciones de I/O , Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
+        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Realizando operaciones de I/O, Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
         yield self.env.timeout(1)
         self.tiempo_ejecucion += 1
 
     def run(self):
-        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Iniciando ejecución , Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
+        print(f"Tiempo {self.env.now}: Proceso {self.numero_proceso} - Iniciando ejecución, Tiempo de ejecución del proceso: {self.env.now - self.tiempo_inicio}")
         self.tiempo_inicio = self.env.now
         yield self.env.process(self.pedir_memoria())
         yield self.env.process(self.usar_cpu())
         self.num_instruc -= 3
         while self.num_instruc > 0:
-            yield self.env.timeout(1)
+            yield self.env.timeout(1 / self.procesadores)  # Adjusting for multiple processors
             self.num_instruc -= 3
             if random.randint(1, 21) == 1:
                 yield self.env.process(self.pedir_io())
@@ -44,12 +44,12 @@ class Programa:
         yield self.ram.put(self.memoria)
         return self.tiempo_inicio, self.env.now
 
-def simular(env, ram, num_procesos, intervalo):
+def simular(env, ram, num_procesos, intervalo, procesadores):
     tiempos_ejecucion = []
     print("Simulando....")
     for i in range(num_procesos):
         numero_proceso = i + 1
-        programa = Programa(env, ram, None, env.now, numero_proceso)
+        programa = Programa(env, ram, procesadores, env.now, numero_proceso)
         tiempo_inicio, tiempo_final = yield env.process(programa.run())
         tiempos_ejecucion.append((tiempo_inicio, tiempo_final))
         yield env.timeout(intervalo)
@@ -62,7 +62,7 @@ def simular(env, ram, num_procesos, intervalo):
     print(f"-------------------------------------------------")
 
     numero_random = random.randint(1, 1000)
-    nombre_archivo = f"{num_procesos}_procesos_{numero_random}_intervalo_{intervalo}.csv"
+    nombre_archivo = f"{num_procesos}_procesos_{numero_random}_intervalo_{intervalo}_procesadores_{procesadores}.csv"
     
     with open(nombre_archivo, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -88,11 +88,24 @@ def plot_tiempo_vs_procesos(tiempos_ejecucion):
     plt.show()
 
 env = simpy.Environment()
-ram = simpy.Container(env, init=200, capacity=200)
+ram_capacity = 200
 
 num_procesos = int(input("Ingrese la cantidad de procesos a simular: "))
 intervalo = int(input("Ingrese el intervalo entre procesos (en segundos): "))
 
-env.process(simular(env, ram, num_procesos, intervalo))
+# First simulation with increased memory
+ram = simpy.Container(env, init=ram_capacity, capacity=ram_capacity)
+env.process(simular(env, ram, num_procesos, intervalo, 1))
+env.run()
 
+# Second simulation with faster processor
+ram_capacity = 100
+ram = simpy.Container(env, init=ram_capacity, capacity=ram_capacity)
+env.process(simular(env, ram, num_procesos, intervalo, 6))
+env.run()
+
+# Third simulation with multiple processors
+ram_capacity = 100
+ram = simpy.Container(env, init=ram_capacity, capacity=ram_capacity)
+env.process(simular(env, ram, num_procesos, intervalo, 2))
 env.run()
