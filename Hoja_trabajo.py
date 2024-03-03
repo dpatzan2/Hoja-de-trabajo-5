@@ -2,10 +2,11 @@ import simpy
 import random
 import csv
 import statistics
+import matplotlib.pyplot as plt
 
 class Programa:
     def __init__(self, env, ram, procesador, tiempo_inicio, numero_proceso):
-        self.memoria = random.randint(1, 10)
+        self.memoria = 100
         self.num_instruc = random.randint(1, 10)
         self.env = env
         self.ram = ram
@@ -70,6 +71,20 @@ def simular(env, ram, num_procesos, intervalo):
             writer.writerow([i + 1, tiempo_inicio, tiempo_final])
 
     print(f"Datos almacenados en el archivo: {nombre_archivo}")
+
+    # Generar la gráfica
+    plot_tiempo_vs_procesos(tiempos_ejecucion)
+
+def plot_tiempo_vs_procesos(tiempos_promedio):
+    num_procesos = range(1, len(tiempos_promedio) + 1)
+
+    plt.plot(num_procesos, tiempos_promedio, marker='o')
+    plt.title('Tiempo Promedio de Ejecución por Número de Procesos')
+    plt.xlabel('Número de Procesos')
+    plt.ylabel('Tiempo Promedio de Ejecución')
+    plt.grid(True)
+    plt.show()
+
 
 env = simpy.Environment()
 ram = simpy.Container(env, init=100, capacity=100)
