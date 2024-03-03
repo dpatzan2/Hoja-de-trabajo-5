@@ -5,12 +5,12 @@ import statistics
 import matplotlib.pyplot as plt
 
 class Programa:
-    def __init__(self, env, ram, procesador, tiempo_inicio, numero_proceso):
+    def __init__(self, env, ram, procesadores, tiempo_inicio, numero_proceso):
         self.memoria = 100
         self.num_instruc = random.randint(1, 10)
         self.env = env
         self.ram = ram
-        self.procesador = procesador
+        self.procesadores = procesadores  
         self.tiempo_inicio = tiempo_inicio
         self.tiempo_ejecucion = 0
         self.numero_proceso = numero_proceso
@@ -75,19 +75,20 @@ def simular(env, ram, num_procesos, intervalo):
     # Generar la gráfica
     plot_tiempo_vs_procesos(tiempos_ejecucion)
 
-def plot_tiempo_vs_procesos(tiempos_promedio):
-    num_procesos = range(1, len(tiempos_promedio) + 1)
+def plot_tiempo_vs_procesos(tiempos_ejecucion):
+    num_procesos = range(1, len(tiempos_ejecucion) + 1)
+    tiempo_total = [tiempo_final - tiempo_inicio for tiempo_inicio, tiempo_final in tiempos_ejecucion]
+    tiempo_acumulado = [sum(tiempo_total[:i+1]) for i in range(len(tiempo_total))]
 
-    plt.plot(num_procesos, tiempos_promedio, marker='o')
-    plt.title('Tiempo Promedio de Ejecución por Número de Procesos')
+    plt.plot(num_procesos, tiempo_acumulado, marker='o')
+    plt.title('Tiempo Total de Ejecución por Número de Procesos')
     plt.xlabel('Número de Procesos')
-    plt.ylabel('Tiempo Promedio de Ejecución')
+    plt.ylabel('Tiempo Total de Ejecución')
     plt.grid(True)
     plt.show()
 
-
 env = simpy.Environment()
-ram = simpy.Container(env, init=100, capacity=100)
+ram = simpy.Container(env, init=200, capacity=200)
 
 num_procesos = int(input("Ingrese la cantidad de procesos a simular: "))
 intervalo = int(input("Ingrese el intervalo entre procesos (en segundos): "))

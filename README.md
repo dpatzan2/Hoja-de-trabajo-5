@@ -8,7 +8,7 @@ Esta aplicación simula el comportamiento de procesos en un entorno utilizando S
 
 ### Requerimientos del Sistema
 
-- Python 3.x
+- Python 3.11.2
 - Bibliotecas: SimPy, matplotlib
 
 ### Funcionalidades
