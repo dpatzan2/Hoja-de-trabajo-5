@@ -62,7 +62,7 @@ def simular(env, ram, num_procesos, intervalo):
     print(f"-------------------------------------------------")
 
     numero_random = random.randint(1, 1000)
-    nombre_archivo = f"{num_procesos}_procesos_{numero_random}.csv"
+    nombre_archivo = f"{num_procesos}_procesos_{numero_random}_intervalo_{intervalo}.csv"
     
     with open(nombre_archivo, mode='w', newline='') as file:
         writer = csv.writer(file)
